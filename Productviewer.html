@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Products</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            margin: 20px;
+            background-color: #f8f9fa; /* Light grey background */
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+        }
+
+        #welcomeMessage {
+            font-size: 20px;
+            color: #495057; /* Dark grey text */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #productTable {
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            text-align: center;
+            padding: 10px; /* Improved cell padding */
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        #createUpdateForm {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: none;
+            margin-top: 20px;
+        }
+
+        h2 span {
+            color: #007bff;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Update button styles for better visibility */
+        #doCreateButton,
+        #doUpdateButton {
+            background-color: #28a745;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcomeMessage">Welcome to my Craft Supplies Database</div>
+
+    <h1>Products</h1>
+    <div><button id="showCreateButton" onclick="showCreate()">Create Product</button></div>
+    <div>
+        <table class="table" id="productTable">
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Price</th>
+                <th scope="col">Description</th>
+                <th scope="col">Update</th>
+                <th scope="col">Delete</th>
+            </tr>
+        </table>
+    </div>
+    <div id='createUpdateForm'>
+        <h2><span id="createLabel">Create a</span> <span id="updateLabel">Update</span> Product</h2>
+        <input type="hidden" name="id"/>
+        Name <input type="text" name="name" aria-label="Product Name"/><br/>
+        Price <input type="number" name="price" aria-label="Product Price"/> <br/>
+        Description <input type="text" name="description" aria-label="Product Description"/> <br/>
+        <span><button id="doCreateButton" onclick="doCreate()">Create</button></span>
+        <span><button id="doUpdateButton" onclick="doUpdate()">Update</button></span>
+    </div>
+
+    <script>
+    
+        function showCreate() {
+            document.getElementById('showCreateButton').style.display = "none";
+            document.getElementById('productTable').style.display = "none";
+            document.getElementById('createUpdateForm').style.display = "block";
+
+            document.getElementById('createLabel').style.display = "inline";
+            document.getElementById('updateLabel').style.display = "none";
+
+            document.getElementById('doCreateButton').style.display = "block";
+            document.getElementById('doUpdateButton').style.display = "none";
+        }
+
+        function showViewAll() {
+            document.getElementById('showCreateButton').style.display = "block";
+            document.getElementById('productTable').style.display = "block";
+            document.getElementById('createUpdateForm').style.display = "none";
+        }
+
+        function showUpdate(buttonElement) {
+            document.getElementById('showCreateButton').style.display = "none";
+            document.getElementById('productTable').style.display = "none";
+            document.getElementById('createUpdateForm').style.display = "block";
+
+            document.getElementById('createLabel').style.display = "none";
+            document.getElementById('updateLabel').style.display = "inline";
+
+            document.getElementById('doCreateButton').style.display = "none";
+            document.getElementById('doUpdateButton').style.display = "block";
+
+            var rowElement = buttonElement.parentNode.parentNode;
+            var product = getProductFromRow(rowElement);
+            populateFormWithProduct(product);
+        }
+
+        function doCreate() {
+            var form = document.getElementById('createUpdateForm');
+            var product = {
+                name: form.querySelector('input[name="name"]').value,
+                price: form.querySelector('input[name="price"]').value,
+                description: form.querySelector('input[name="description"]').value
+            };
+            createProductAjax(product);
+        }
+
+        function doUpdate() {
+        // Ask for confirmation before updating
+        var confirmation = confirm("Are you sure you want to update this item?");
+        
+        if (confirmation) {
+            var product = getProductFromForm();
+            var rowElement = document.getElementById(product.id);
+            updateProductAjax(product);
+            setProductInRow(rowElement, product);
+            clearForm();
+            showViewAll();
+        } else {
+            // Do nothing if the user cancels the update
+            console.log("Update canceled.");
+    }
+}
+
+        function doDelete(r) {
+            var tableElement = document.getElementById('productTable');
+            var rowElement = r.parentNode.parentNode;
+            var index = rowElement.rowIndex;
+
+            // Ask for confirmation before deleting
+            var confirmation = confirm("Are you sure you want to delete this item?");
+            
+            if (confirmation) {
+                deleteProductAjax(rowElement.getAttribute("id"));
+                tableElement.deleteRow(index);
+        } else {
+            // Do nothing if the user cancels the deletion
+            console.log("Deletion canceled.");
+    }
+}
+
+        function addProductToTable(product) {
+            var tableElement = document.getElementById('productTable');
+            var rowElement = tableElement.insertRow(-1);
+            rowElement.setAttribute('id', product.id);
+            var cell1 = rowElement.insertCell(0);
+            cell1.innerHTML = product.id;
+            var cell2 = rowElement.insertCell(1);
+            cell2.innerHTML = product.name;
+            var cell3 = rowElement.insertCell(2);
+            cell3.innerHTML = product.price;
+            var cell4 = rowElement.insertCell(3);
+            cell4.innerHTML = product.description;
+            var cell5 = rowElement.insertCell(4);
+            cell5.innerHTML = '<button onclick="showUpdate(this)">Update</button>';
+            var cell6 = rowElement.insertCell(5);
+            cell6.innerHTML = '<button onclick="doDelete(this)">Delete</button>';
+        }
+
+        function clearForm() {
+            var form = document.getElementById('createUpdateForm');
+            form.querySelector('input[name="name"]').value = '';
+            form.querySelector('input[name="price"]').value = '';
+            form.querySelector('input[name="description"]').value = '';
+        }
+
+        function getProductFromRow(rowElement) {
+            var product = {
+                id: rowElement.getAttribute('id'),
+                name: rowElement.cells[1].firstChild.textContent,
+                price: rowElement.cells[2].firstChild.textContent,
+                description: rowElement.cells[3].firstChild.textContent
+            };
+            return product;
+        }
+
+        function setProductInRow(rowElement, product) {
+            rowElement.cells[0].firstChild.textContent = product.id;
+            rowElement.cells[1].firstChild.textContent = product.name;
+            rowElement.cells[2].firstChild.textContent = product.price;
+            rowElement.cells[3].firstChild.textContent = product.description;
+        }
+
+        function populateFormWithProduct(product) {
+            var form = document.getElementById('createUpdateForm');
+            form.querySelector('input[name="id"]').disabled = true;
+            form.querySelector('input[name="id"]').value = product.id;
+            form.querySelector('input[name="name"]').value = product.name;
+            form.querySelector('input[name="price"]').value = product.price;
+            form.querySelector('input[name="description"]').value = product.description;
+        }
+
+        function getProductFromForm() {
+            var form = document.getElementById('createUpdateForm');
+            var product = {
+                id: form.querySelector('input[name="id"]').value,
+                name: form.querySelector('input[name="name"]').value,
+                price: form.querySelector('input[name="price"]').value,
+                description: form.querySelector('input[name="description"]').value
+            };
+            return product;
+        }
+
+    function getAllAjax() {
+    $.ajax({
+        "url": "http://localhost:5000/products",
+        "type": "GET",
+        "dataType": "json",
+        "success": function (data) {
+            console.log(data);
+            for (var i = 0; i < data.length; i++) {
+                addProductToTable(data[i]);
+            }
+        },
+        "error": function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+        }
+    });
+}
+
+function createProductAjax(product) {
+    $.ajax({
+        "url": "http://localhost:5000/products",
+        "type": "POST",
+        "contentType": "application/json",
+        "data": JSON.stringify(product),
+        "dataType": "json",
+        "success": function (data) {
+            addProductToTable(data);
+            clearForm();
+            showViewAll();
+        },
+        "error": function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+        }
+    });
+}
+
+function updateProductAjax(product) {
+    $.ajax({
+        "url": "http://localhost:5000/products/" + product.id,
+        "type": "PUT",
+        "contentType": "application/json",
+        "data": JSON.stringify(product),
+        "dataType": "json",
+        "success": function (data) {
+            console.log(data);
+        },
+        "error": function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+        }
+    });
+}
+
+function deleteProductAjax(productId) {
+    $.ajax({
+        "url": "http://localhost:5000/products/" + productId,
+        "type": "DELETE",
+        "success": function (data) {
+            console.log(data);
+        },
+        "error": function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus, errorThrown);
+        }
+    });
+}
+
+$(document).ready(function () {
+    getAllAjax();
+});
+</script>
+</html>
+
