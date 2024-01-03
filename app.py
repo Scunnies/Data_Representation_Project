@@ -1,5 +1,3 @@
-# server1.py
-
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -9,7 +7,7 @@ app = Flask(__name__, static_url_path='', static_folder='.')
 CORS(app)
 
 try:
-    # Attempt to initialize the database connection
+    # to initialise the database connection
     productDAO.initialize_database_connection()
     print("Connected to the database successfully.")
 except Exception as e:

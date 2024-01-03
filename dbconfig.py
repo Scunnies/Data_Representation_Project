@@ -1,5 +1,3 @@
-# dbconfig.py
-
 mysql = {
     'host': 'localhost',
     'user': 'root',

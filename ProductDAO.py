@@ -1,5 +1,3 @@
-# ProductDAO.py
-
 import mysql.connector
 import dbconfig as cfg
 

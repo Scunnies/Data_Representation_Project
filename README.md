@@ -26,17 +26,21 @@ This project is a web application built with Flask that provides a RESTful API f
    - MySQL script for creating the database (`products_db`) and the `products` table.
    - Inserts initial sample data into the `products` table.
 
+6. **requirements.txt:**
+    - Basic text file.
+    - Lists relevant Python dependencies (libraries and packages) necessary to run project files.
+
 ## How to Run
 
 1. Install dependencies using: 
-   `pip install Flask Flask-CORS Flask-SQLAlchemy mysql-connector-python`
+    - pip install -r requirements.txt
 
 2. Execute the MySQL script to create the database and table: 
-    mysql -u <your_mysql_username> -p < products_db.sql (replacing with your own username)
+    - mysql -u <your_mysql_username> -p < products_db.sql (replacing with your own username)
 
 3. Run the Flask application in the console/terminal: 
-    python app.py 
-    Open browser and go to http://localhost:5000 to view the Craft Supplies Database.
+    - python app.py 
+    - Open browser and go to http://localhost:5000 to view the Craft Supplies Database.
 
 ## Interactions
 The Flask API (app.py) serves as the backend, providing endpoints for retrieving, creating, updating, and deleting products. 
