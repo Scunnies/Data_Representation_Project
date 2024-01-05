@@ -2,18 +2,15 @@ import mysql.connector
 import dbconfig as cfg
 
 class ProductDAO:
-    connection = ""
-    cursor = ''
-    host = ''
-    user = ''
-    password = ''
-    database = ''
+    connection = None
+    cursor = None
 
     def __init__(self):
         self.host = cfg.mysql['host']
         self.user = cfg.mysql['user']
         self.password = cfg.mysql['password']
         self.database = 'products_db'
+        self.initialize_database_connection()
 
     def initialize_database_connection(self):
         self.connection = mysql.connector.connect(
@@ -24,78 +21,69 @@ class ProductDAO:
         )
         self.cursor = self.connection.cursor()
 
-    def getcursor(self):
-        if not self.connection or not self.connection.is_connected():
-            self.initialize_database_connection()
-        return self.cursor
-
-    def closeAll(self):
-        if self.connection.is_connected():
+    def close_connection(self):
+        if self.connection and self.connection.is_connected():
             self.connection.close()
         if self.cursor:
             self.cursor.close()
 
     def create(self, values):
-        print(f"Creating a new product in the database with values: {values}")
-        cursor = self.getcursor()
+        print(f"creating a new product in the database with values: {values}")
+        self.initialize_database_connection()
         sql = "insert into products (name, price, description) values (%s,%s,%s)"
-        cursor.execute(sql, values)
-
+        self.cursor.execute(sql, values)
         self.connection.commit()
-        newid = cursor.lastrowid
-        self.closeAll()
+        newid = self.cursor.lastrowid
+        self.close_connection()
         return newid
 
     def getAll(self):
-        print("Getting all products from the database")
-        cursor = self.getcursor()
+        print("getting all products from the database")
+        self.initialize_database_connection()
         sql = "select * from products"
-        cursor.execute(sql)
-        results = cursor.fetchall()
-        print(f"Results: {results}")
+        self.cursor.execute(sql)
+        results = self.cursor.fetchall()
+        print(f"results: {results}")
         returnArray = []
         for result in results:
             returnArray.append(self.convertToDictionary(result))
 
-        self.closeAll()
-        print(f"Return Array: {returnArray}")
-        return returnArray
-
-
-        self.closeAll()
+        self.close_connection()
+        print(f"return array: {returnArray}")
         return returnArray
 
     def findByID(self, id):
-        print(f"Finding product by ID: {id}")
-        cursor = self.getcursor()
+        print(f"finding product by ID: {id}")
+        self.initialize_database_connection()
         sql = "select * from products where id = %s"
         values = (id,)
 
-        cursor.execute(sql, values)
-        result = cursor.fetchone()
+        self.cursor.execute(sql, values)
+        result = self.cursor.fetchone()
         returnvalue = self.convertToDictionary(result)
-        self.closeAll()
+        self.close_connection()
         return returnvalue
 
     def update(self, values):
-        print(f"Updating product in the database with values: {values}")
-        cursor = self.getcursor()
+        print(f"updating product in the database with values: {values}")
+        self.initialize_database_connection()
         sql = "update products set name= %s, price=%s, description=%s  where id = %s"
-        cursor.execute(sql, values)
+        self.cursor.execute(sql, values)
         self.connection.commit()
-        self.closeAll()
+        self.close_connection()
 
     def delete(self, id):
-        print(f"Deleting product from the database with ID: {id}")
-        cursor = self.getcursor()
+        print(f"deleting product from the database with ID: {id}")
+        self.initialize_database_connection()
         sql = "delete from products where id = %s"
         values = (id,)
 
-        cursor.execute(sql, values)
+        self.cursor.execute(sql, values)
 
-        self.connection.commit()
-        self.closeAll()
-        print("Delete done")
+        self.connection.commit()  # Commit the changes to the database
+        self.close_connection()
+        print("delete done")
+
 
     def convertToDictionary(self, result):
         colnames = ['id', 'name', 'price', 'description']
@@ -108,4 +96,8 @@ class ProductDAO:
 
         return item
 
+    def __del__(self):
+        self.close_connection()
+
+# Create an instance of the ProductDAO class
 productDAO = ProductDAO()

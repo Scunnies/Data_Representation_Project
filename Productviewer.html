@@ -1,11 +1,16 @@
+<!-- This HTML file serves as the front-end interface for managing the products in the Craft Supplies Database.
+     It includes scripts for interacting with the backend using AJAX requests. -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Products</title>
+    <!-- necessary external dependencies: jQuery for AJAX and Bootstrap for styling -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- iinternal styles for custom styling -->
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -82,6 +87,7 @@
     <div id="welcomeMessage">Welcome to my Craft Supplies Database</div>
 
     <h1>Products</h1>
+    <!-- buttons and table for product management -->
     <div><button id="showCreateButton" onclick="showCreate()">Create Product</button></div>
     <div>
         <table class="table" id="productTable">
@@ -95,7 +101,8 @@
             </tr>
         </table>
     </div>
-    <div id='createUpdateForm'>
+     <!-- form for creating/updating products -->
+     <div id='createUpdateForm'>
         <h2><span id="createLabel">Create a</span> <span id="updateLabel">Update</span> Product</h2>
         <input type="hidden" name="id"/>
         Name <input type="text" name="name" aria-label="Product Name"/><br/>
@@ -104,9 +111,8 @@
         <span><button id="doCreateButton" onclick="doCreate()">Create</button></span>
         <span><button id="doUpdateButton" onclick="doUpdate()">Update</button></span>
     </div>
-
+    <!-- Script section containing JavaScript functions for interacting with the backend -->
     <script>
-    
         function showCreate() {
             document.getElementById('showCreateButton').style.display = "none";
             document.getElementById('productTable').style.display = "none";
@@ -142,13 +148,13 @@
         }
 
         function doCreate() {
-            var form = document.getElementById('createUpdateForm');
-            var product = {
-                name: form.querySelector('input[name="name"]').value,
-                price: form.querySelector('input[name="price"]').value,
-                description: form.querySelector('input[name="description"]').value
-            };
-            createProductAjax(product);
+        var form = document.getElementById('createUpdateForm');
+        var product = {
+            name: form.querySelector('input[name="name"]').value,
+            price: form.querySelector('input[name="price"]').value,
+            description: form.querySelector('input[name="description"]').value
+        };
+        createProductAjax(product);
         }
 
         function doUpdate() {
@@ -185,6 +191,7 @@
     }
 }
 
+        
         function addProductToTable(product) {
             var tableElement = document.getElementById('productTable');
             var rowElement = tableElement.insertRow(-1);
@@ -192,16 +199,17 @@
             var cell1 = rowElement.insertCell(0);
             cell1.innerHTML = product.id;
             var cell2 = rowElement.insertCell(1);
-            cell2.innerHTML = product.name;
+            cell2.innerHTML = product.name;  
             var cell3 = rowElement.insertCell(2);
-            cell3.innerHTML = product.price;
+            cell3.innerHTML = product.price;  
             var cell4 = rowElement.insertCell(3);
-            cell4.innerHTML = product.description;
+            cell4.innerHTML = product.description;  
             var cell5 = rowElement.insertCell(4);
             cell5.innerHTML = '<button onclick="showUpdate(this)">Update</button>';
             var cell6 = rowElement.insertCell(5);
             cell6.innerHTML = '<button onclick="doDelete(this)">Delete</button>';
         }
+
 
         function clearForm() {
             var form = document.getElementById('createUpdateForm');
@@ -246,7 +254,7 @@
             };
             return product;
         }
-
+    // function to fetch all products from the server and display them on page load
     function getAllAjax() {
     $.ajax({
         "url": "http://localhost:5000/products",
@@ -263,7 +271,7 @@
         }
     });
 }
-
+// function to send a request to create a new product on the server
 function createProductAjax(product) {
     $.ajax({
         "url": "http://localhost:5000/products",
@@ -281,7 +289,7 @@ function createProductAjax(product) {
         }
     });
 }
-
+// function to send a request to update an existing product on the server
 function updateProductAjax(product) {
     $.ajax({
         "url": "http://localhost:5000/products/" + product.id,
@@ -297,7 +305,7 @@ function updateProductAjax(product) {
         }
     });
 }
-
+// function to send a request to delete a product from the server
 function deleteProductAjax(productId) {
     $.ajax({
         "url": "http://localhost:5000/products/" + productId,
